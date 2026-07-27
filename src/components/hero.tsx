@@ -20,21 +20,21 @@ const revealEase = [0.53, 1, 0.32, 1] as const;
 const contentRevealDelay = 0.62;
 const capabilities = [
   {
-    number: "01",
+   
     icon: Code2,
     title: "Web products",
     description: "Fast, accessible interfaces and complete product experiences built for real users and real business goals.",
     tags: ["Product websites", "Web applications", "Admin platforms"],
   },
   {
-    number: "02",
+ 
     icon: Smartphone,
     title: "Mobile applications",
     description: "Cross-platform mobile experiences with thoughtful navigation, reliable state, and native-feeling interaction.",
     tags: ["React Native", "Expo applications", "Responsive systems"],
   },
   {
-    number: "03",
+   
     icon: Layers3,
     title: "Product systems",
     description: "Maintainable frontend architecture that connects design systems, APIs, authentication, and complex workflows.",
@@ -135,27 +135,13 @@ export function Hero() {
         </nav>
 
         <section className={styles.hero} id="top" aria-labelledby="hero-title">
-          <motion.div
-            className={styles.heroMeta}
-            initial={shouldReduceMotion ? false : heroReveal(0.02, 8).initial}
-            animate={isLoading ? undefined : heroReveal(0.02, 8).animate}
-            transition={heroReveal(0.02, 8).transition}
-          >
-            <span>{profile.role}</span>
-            <span>{profile.location}</span>
-          </motion.div>
 
-          <div className={styles.intro}>
-            <motion.p
-              className={styles.kicker}
-              initial={shouldReduceMotion ? false : heroReveal(0.1, 10).initial}
-              animate={isLoading ? undefined : heroReveal(0.1, 10).animate}
-              transition={heroReveal(0.1, 10).transition}
-            >
-              Hello, I&apos;m
-            </motion.p>
+          <div className={styles.heroCover}>
+            <motion.div className={styles.heroMonogram} aria-hidden="true" initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.94, filter: "blur(18px)" }} animate={isLoading ? undefined : { opacity: 1, scale: 1, filter: "blur(0px)" }} transition={{ duration: 1.1, delay: 0.2 + contentRevealDelay, ease: revealEase }}>
+              <LogoMark />
+            </motion.div>
             <h1 id="hero-title" aria-label={profile.name}>
-              <span className={styles.nameLine}>
+              <span className={styles.coverLine}>
                 <span className={styles.nameClip}>
                   <motion.span
                     initial={shouldReduceMotion ? false : { opacity: 0, transform: "translateY(105%)", filter: "blur(14px)" }}
@@ -165,6 +151,8 @@ export function Hero() {
                     Zeeshan
                   </motion.span>
                 </span>
+              </span>
+              <span className={`${styles.coverLine} ${styles.coverLineSecond}`}>
                 <span className={styles.nameClip}>
                   <motion.span
                     className={styles.accentName}
@@ -177,16 +165,7 @@ export function Hero() {
                 </span>
               </span>
             </h1>
-            <motion.p
-              className={styles.roleStatement}
-              initial={shouldReduceMotion ? false : heroReveal(0.43, 16).initial}
-              animate={isLoading ? undefined : heroReveal(0.43, 16).animate}
-              transition={heroReveal(0.43, 16).transition}
-            >
-              I design &amp; build <span>digital products.</span>
-            </motion.p>
-            <motion.div
-              className={styles.heroFooter}
+            <motion.div className={styles.coverFooter}
               initial="hidden"
               animate={isLoading ? "hidden" : "visible"}
               variants={{
@@ -194,15 +173,17 @@ export function Hero() {
                 visible: { transition: { staggerChildren: 0.12, delayChildren: 0.56 + contentRevealDelay } },
               }}
             >
-              <motion.p
+              <motion.div className={styles.coverRole}
                 variants={{
                   hidden: shouldReduceMotion ? {} : heroReveal(0, 14).initial,
                   visible: heroReveal(0, 14).animate,
                 }}
                 transition={{ duration: 0.62, ease: revealEase }}
               >
-                {profile.summary}
-              </motion.p>
+                <span>{profile.role}</span>
+                <strong>I design the interface.<br />I build the product.</strong>
+              </motion.div>
+              <motion.p variants={{ hidden: shouldReduceMotion ? {} : heroReveal(0, 14).initial, visible: heroReveal(0, 14).animate }} transition={{ duration: 0.62, ease: revealEase }}>{profile.summary}</motion.p>
               <motion.div
                 className={styles.actions}
                 variants={{
@@ -212,7 +193,7 @@ export function Hero() {
                 transition={{ duration: 0.58, ease: revealEase }}
               >
                 <a className={styles.primaryAction} href="#work">
-                  View my work <ArrowDown size={17} aria-hidden="true" />
+                  Selected work <ArrowDown size={17} aria-hidden="true" />
                 </a>
                 <a className={styles.secondaryAction} href="/resume/Zeeshan-Nawaz-Resume.pdf" download>
                   Résumé <Download size={16} aria-hidden="true" />
@@ -229,7 +210,7 @@ export function Hero() {
             animate={isLoading ? undefined : heroReveal(0.78, 8).animate}
             transition={heroReveal(0.78, 8).transition}
           >
-            Scroll to explore <ArrowDown size={14} aria-hidden="true" />
+            Scroll / explore <ArrowDown size={14} aria-hidden="true" />
           </motion.a>
         </section>
 
@@ -258,7 +239,7 @@ function WhatIBuild({ shouldReduceMotion }: { shouldReduceMotion: boolean }) {
     <section className={styles.buildSection} aria-labelledby="build-title">
       <div className={styles.sectionTopline}>
         <span>What I build</span>
-        <span>Capabilities / 03</span>
+        <span>Capabilities</span>
       </div>
       <motion.div className={styles.buildHeading} {...sectionReveal(shouldReduceMotion)}>
         <div>
@@ -276,7 +257,6 @@ function WhatIBuild({ shouldReduceMotion }: { shouldReduceMotion: boolean }) {
               key={capability.title}
               {...sectionReveal(shouldReduceMotion, index * 0.08)}
             >
-              <span className={styles.capabilityNumber}>{capability.number}</span>
               <span className={styles.capabilityIcon}><Icon size={25} strokeWidth={1.4} aria-hidden="true" /></span>
               <div>
                 <h3>{capability.title}</h3>
@@ -313,7 +293,7 @@ function SkillsShowcase({ shouldReduceMotion }: { shouldReduceMotion: boolean })
               key={group.label}
               {...sectionReveal(shouldReduceMotion, index * 0.07)}
             >
-              <header><span>{String(index + 1).padStart(2, "0")}</span><strong>{group.label}</strong><i /></header>
+              <header><strong>{group.label}</strong><i /></header>
               <div>{group.skills.map((skill) => <span key={skill}>{skill}</span>)}</div>
             </motion.article>
           ))}
@@ -331,7 +311,7 @@ function ContactSection({ shouldReduceMotion }: { shouldReduceMotion: boolean })
         <span>Available for selected work</span>
       </div>
       <motion.div className={styles.contactContent} {...sectionReveal(shouldReduceMotion)}>
-        <div className={styles.contactStatus}><i /><span>Open to thoughtful collaborations</span><strong>2026</strong></div>
+        <div className={styles.contactStatus}><i /><span>Open to thoughtful collaborations</span></div>
         <div className={styles.contactMessage}>
           <p>Have a product in mind?</p>
           <h2 id="contact-title"><span>Let&apos;s make it</span><span className={styles.contactAccent}>real.</span></h2>
@@ -399,7 +379,6 @@ function ProjectShowcase({ shouldReduceMotion }: { shouldReduceMotion: boolean }
       <div className={styles.projectsSticky}>
         <div className={styles.projectsTopline}>
           <span>Selected work</span>
-          <span>{String(activeIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
         </div>
 
         <div className={styles.projectsLayout}>
@@ -433,7 +412,6 @@ function ProjectShowcase({ shouldReduceMotion }: { shouldReduceMotion: boolean }
                   <span>View live project <ArrowUpRight size={16} aria-hidden="true" /></span>
                 </a>
                 <div className={styles.projectContent}>
-                  <div className={styles.projectNumber}>0{activeIndex + 1}</div>
                   <div className={styles.projectIdentity}>
                     <span>{project.platform} / {project.role}</span>
                     <h3>{project.name}</h3>

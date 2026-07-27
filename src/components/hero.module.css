@@ -1012,6 +1012,144 @@
   text-transform: uppercase;
 }
 
+/* Hero cover — an authored typographic composition, not a landing-page template. */
+.hero {
+  justify-content: flex-start;
+  padding-top: 34px;
+}
+
+.heroIssue {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  color: var(--muted);
+  font: 500 9px/1 var(--font-mono), monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heroIssue span:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.heroIssue i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.heroCover {
+  position: relative;
+  display: flex;
+  min-height: calc(100svh - 180px);
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+}
+
+.heroMonogram {
+  position: absolute;
+  z-index: 0;
+  top: 12%;
+  right: -4%;
+  width: min(47vw, 700px);
+  color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  opacity: 0.5;
+  transform: rotate(-8deg);
+}
+
+.heroMonogram svg {
+  width: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 4;
+}
+
+.heroCover h1 {
+  position: relative;
+  z-index: 1;
+  margin: clamp(56px, 8vh, 100px) 0 0;
+  font-size: clamp(5.5rem, 13.4vw, 13rem);
+  font-weight: 680;
+  letter-spacing: -0.075em;
+  line-height: 0.7;
+}
+
+.coverLine {
+  display: flex;
+  align-items: flex-start;
+}
+
+.coverLineSecond {
+  justify-content: flex-end;
+  padding-right: clamp(10px, 7vw, 100px);
+}
+
+.coverIndex {
+  margin: 0 0 0 clamp(18px, 3vw, 50px);
+  padding-top: 0.8em;
+  color: var(--muted);
+  font: 500 9px/1 var(--font-mono), monospace;
+  letter-spacing: 0.08em;
+}
+
+.heroCover .nameClip {
+  padding: 0 0 0.13em;
+}
+
+.heroCover .accentName {
+  color: var(--foreground);
+}
+
+.coverFooter {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(250px, 0.7fr) minmax(260px, 0.65fr) auto;
+  gap: clamp(34px, 6vw, 92px);
+  align-items: end;
+  margin-top: clamp(45px, 7vh, 84px);
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.coverRole {
+  display: grid;
+  gap: 14px;
+}
+
+.coverRole span {
+  color: var(--accent);
+  font: 500 9px/1.3 var(--font-mono), monospace;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.coverRole strong {
+  font-size: clamp(1.25rem, 2vw, 2rem);
+  font-weight: 550;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.coverFooter > p {
+  max-width: 430px;
+  margin: 0;
+  color: var(--muted-bright);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.coverFooter .actions {
+  justify-self: end;
+}
+
 .work {
   width: min(1440px, calc(100% - 80px));
   margin: 0 auto;
@@ -1625,9 +1763,83 @@
   .skillsStatement {
     position: static;
   }
+
+  .heroCover h1 {
+    font-size: clamp(5rem, 16vw, 8.5rem);
+  }
+
+  .coverFooter {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .coverFooter .actions {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
 }
 
 @media (max-width: 560px) {
+  .hero {
+    padding-top: 22px;
+  }
+
+  .heroIssue span:last-child {
+    font-size: 0;
+  }
+
+  .heroIssue span:last-child::after {
+    font-size: 9px;
+    content: "Available";
+  }
+
+  .heroCover {
+    min-height: calc(100svh - 130px);
+    justify-content: flex-start;
+  }
+
+  .heroMonogram {
+    top: 17%;
+    right: -22%;
+    width: 94vw;
+  }
+
+  .heroCover h1 {
+    margin-top: 22vh;
+    font-size: clamp(4.6rem, 23vw, 7rem);
+    line-height: 0.73;
+  }
+
+  .coverLineSecond {
+    justify-content: flex-start;
+    padding-right: 0;
+    padding-left: 10vw;
+  }
+
+  .coverIndex {
+    display: none;
+  }
+
+  .coverFooter {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: auto;
+    padding: 22px 0 50px;
+  }
+
+  .coverFooter > p {
+    display: none;
+  }
+
+  .coverFooter .actions {
+    grid-column: auto;
+    width: 100%;
+  }
+
+  .coverFooter .primaryAction,
+  .coverFooter .secondaryAction {
+    width: 100%;
+  }
+
   .buildHeading {
     gap: 48px;
     margin: 54px 0;
