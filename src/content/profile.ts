@@ -3,26 +3,40 @@ export type FeaturedProject = {
   name: string;
   product: string;
   role: string;
-  platform: "Web";
+  platform: "Web" | "Web & Mobile";
   stack: readonly string[];
   highlights: readonly string[];
   image: string;
   imageAlt: string;
+  mobileImage?: string;
   liveUrl: string;
-  githubUrl: string;
+  githubUrl?: string;
 };
 
 export const profile = {
   name: "Zeeshan Nawaz",
   role: "Web & Mobile Application Developer",
   location: "Gujranwala, Pakistan",
-  email: "zeeshancheema1200@gmail.com",
-  linkedIn: "https://www.linkedin.com/in/zeeshan-nawaz-10842",
+  email: "ze3shannawaz@gmail.com",
+  linkedIn: "https://www.linkedin.com/in/zeeshan-nawaz-f0842",
   summary:
     "I build responsive web products and cross-platform mobile applications with React, Next.js, React Native, and TypeScript.",
 } as const;
 
 export const featuredProjects: readonly FeaturedProject[] = [
+  {
+    id: "dex-remit",
+    name: "Dex Remit",
+    product: "A regulated international money-transfer platform for fast, secure cross-border payments.",
+    role: "Fintech Product",
+    platform: "Web & Mobile",
+    stack: ["React", "React Native", "Payment APIs", "Secure transfers"],
+    highlights: ["Global remittance", "Live exchange flow", "Mobile onboarding"],
+    image: "/projects/dex-remit-web.png",
+    imageAlt: "Dex Remit international money transfer website",
+    mobileImage: "/projects/dex-mobile.png",
+    liveUrl: "https://dexremit.com/",
+  },
   {
     id: "logical-commercial-brokers",
     name: "Logical Commercial",
@@ -70,9 +84,9 @@ export const featuredProjects: readonly FeaturedProject[] = [
     platform: "Web",
     stack: ["Next.js", "TypeScript", "Hono RPC", "Zod", "Zustand"],
     highlights: ["Student records", "Attendance tracking", "Academic operations"],
-    image: "/projects/edutrack-pk.png",
-    imageAlt: "EduTrack PK school dashboard preview",
-    liveUrl: "https://project-present-web-eosin.vercel.app/",
+    image: "/projects/edutrack-login-2026.png",
+    imageAlt: "EduTrack PK live school management login screen",
+    liveUrl: "https://present.labsliva.com/",
     githubUrl: "https://github.com/fayzanrj/project-present-web",
   },
 ] as const;

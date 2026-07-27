@@ -8,8 +8,9 @@ FIRST VIEWPORT: Quiet navigation, oversized introduction, two actions, then a pr
 FORM: Dark studio title sequence followed by a restrained product reel; no device collage, dashboard grid, or tab cluster.
 */
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { animate, AnimatePresence, motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { animate, AnimatePresence, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
+import { useLenis } from "lenis/react";
 import { ArrowDown, ArrowRight, ArrowUpRight, Code2, Download, Layers3, Smartphone } from "lucide-react";
 import Image from "next/image";
 import { featuredProjects, profile } from "@/content/profile";
@@ -17,7 +18,6 @@ import { LogoMark } from "@/components/logo-mark";
 import styles from "./hero.module.css";
 
 const revealEase = [0.53, 1, 0.32, 1] as const;
-const contentRevealDelay = 0.62;
 const capabilities = [
   {
    
@@ -48,18 +48,19 @@ const skillGroups = [
   { label: "Interface", skills: ["CSS", "Tailwind CSS", "Motion", "Material UI"] },
   { label: "Data & tools", skills: ["REST APIs", "Redux Toolkit", "Zustand", "Firebase", "Git"] },
 ] as const;
-const heroReveal = (delay: number, distance = 18) => ({
-  initial: { opacity: 0, transform: `translateY(${distance}px)`, filter: "blur(42px)" },
-  animate: { opacity: 1, transform: "translateY(0px)", filter: "blur(0px)" },
-  transition: { duration: 0.82, delay: delay + contentRevealDelay, ease: revealEase },
-});
-
 export function Hero() {
   const shouldReduceMotion = useReducedMotion();
   const [isLoading, setIsLoading] = useState(true);
   const loaderProgress = useMotionValue(0);
   const roundedProgress = useTransform(loaderProgress, (value) => Math.round(value));
   const loaderScale = useTransform(loaderProgress, [0, 100], [0, 1]);
+  const heroRef = useRef<HTMLElement>(null);
+  const monogramRef = useRef<HTMLDivElement>(null);
+  const firstNameRef = useRef<HTMLSpanElement>(null);
+  const lastNameRef = useRef<HTMLSpanElement>(null);
+  const coverFooterRef = useRef<HTMLDivElement>(null);
+  const scrollCueRef = useRef<HTMLAnchorElement>(null);
+  const heroIntroComplete = useRef(false);
 
   useEffect(() => {
     if (!shouldReduceMotion) {
@@ -77,6 +78,68 @@ export function Hero() {
     const timer = window.setTimeout(() => setIsLoading(false), shouldReduceMotion ? 0 : 1450);
     return () => window.clearTimeout(timer);
   }, [loaderProgress, shouldReduceMotion]);
+
+  useEffect(() => {
+    if (isLoading || heroIntroComplete.current) return;
+    heroIntroComplete.current = true;
+
+    const elements = [firstNameRef.current, lastNameRef.current, monogramRef.current, coverFooterRef.current, scrollCueRef.current];
+    if (shouldReduceMotion) {
+      elements.forEach((element) => element?.removeAttribute("data-intro-pending"));
+      return;
+    }
+
+    const animations = [
+      firstNameRef.current?.animate(
+        [{ opacity: 0, transform: "translate3d(-12vw, 28px, 0)" }, { opacity: 1, transform: "translate3d(0, 0, 0)" }],
+        { duration: 760, delay: 70, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "both" },
+      ),
+      lastNameRef.current?.animate(
+        [{ opacity: 0, transform: "translate3d(14vw, 34px, 0)" }, { opacity: 1, transform: "translate3d(0, 0, 0)" }],
+        { duration: 820, delay: 150, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "both" },
+      ),
+      monogramRef.current?.animate(
+        [{ opacity: 0, transform: "translate3d(8vw, 42px, 0) rotate(-18deg) scale(0.94)" }, { opacity: 0.5, transform: "translate3d(0, 0, 0) rotate(-8deg) scale(1)" }],
+        { duration: 980, delay: 40, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "both" },
+      ),
+      coverFooterRef.current?.animate(
+        [{ opacity: 0, transform: "translate3d(0, 46px, 0)" }, { opacity: 1, transform: "translate3d(0, 0, 0)" }],
+        { duration: 680, delay: 330, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "both" },
+      ),
+      scrollCueRef.current?.animate(
+        [{ opacity: 0, transform: "translate3d(0, 12px, 0)" }, { opacity: 1, transform: "translate3d(0, 0, 0)" }],
+        { duration: 520, delay: 510, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "both" },
+      ),
+    ].filter(Boolean) as Animation[];
+
+    const finishTimer = window.setTimeout(() => {
+      animations.forEach((animation) => animation.cancel());
+      elements.forEach((element) => element?.removeAttribute("data-intro-pending"));
+    }, 1100);
+
+    return () => {
+      window.clearTimeout(finishTimer);
+      animations.forEach((animation) => animation.cancel());
+    };
+  }, [isLoading, shouldReduceMotion]);
+
+  useLenis((lenis) => {
+    const hero = heroRef.current;
+    if (!hero || shouldReduceMotion || firstNameRef.current?.hasAttribute("data-intro-pending")) return;
+    const rect = hero.getBoundingClientRect();
+    const progress = Math.max(0, Math.min(1, -rect.top / Math.max(1, rect.height * 0.88)));
+    const eased = 1 - (1 - progress) ** 3;
+    const velocity = Math.max(-18, Math.min(18, lenis.velocity));
+
+    if (firstNameRef.current) firstNameRef.current.style.transform = `translate3d(${(-eased * 12).toFixed(2)}vw, ${(-eased * 18).toFixed(2)}px, 0)`;
+    if (lastNameRef.current) lastNameRef.current.style.transform = `translate3d(${(eased * 14).toFixed(2)}vw, ${(-eased * 46).toFixed(2)}px, 0)`;
+    if (monogramRef.current) monogramRef.current.style.transform = `translate3d(${(eased * 7).toFixed(2)}vw, ${(-eased * 80).toFixed(2)}px, 0) rotate(${(-8 + eased * 18 + velocity * 0.05).toFixed(2)}deg) scale(${(1 + eased * 0.08).toFixed(3)})`;
+    if (coverFooterRef.current) {
+      coverFooterRef.current.style.transform = `translate3d(0, ${(eased * 70).toFixed(2)}px, 0)`;
+      coverFooterRef.current.style.opacity = Math.max(0, 1 - eased * 1.25).toFixed(3);
+    }
+    if (scrollCueRef.current) scrollCueRef.current.style.opacity = Math.max(0, 1 - eased * 2.2).toFixed(3);
+  }, [shouldReduceMotion]);
 
   return (
     <main className={styles.page}>
@@ -115,12 +178,7 @@ export function Hero() {
         )}
       </AnimatePresence>
 
-      <motion.div
-        className={styles.site}
-        initial={shouldReduceMotion ? false : { opacity: 0 }}
-        animate={isLoading ? { opacity: 0 } : { opacity: 1 }}
-        transition={{ duration: 0.55, delay: isLoading ? 0 : 0.16, ease: revealEase }}
-      >
+      <div className={styles.site}>
         <nav className={styles.nav} aria-label="Primary navigation">
           <a className={styles.wordmark} href="#top" aria-label="Zeeshan Nawaz, home">
             <LogoMark title="Zeeshan Nawaz" />
@@ -134,128 +192,110 @@ export function Hero() {
           </a>
         </nav>
 
-        <section className={styles.hero} id="top" aria-labelledby="hero-title">
+        <section className={styles.hero} id="top" ref={heroRef} aria-labelledby="hero-title">
 
           <div className={styles.heroCover}>
-            <motion.div className={styles.heroMonogram} aria-hidden="true" initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.94, filter: "blur(18px)" }} animate={isLoading ? undefined : { opacity: 1, scale: 1, filter: "blur(0px)" }} transition={{ duration: 1.1, delay: 0.2 + contentRevealDelay, ease: revealEase }}>
+            <div className={styles.heroMonogram} ref={monogramRef} data-intro-pending aria-hidden="true">
               <LogoMark />
-            </motion.div>
+            </div>
             <h1 id="hero-title" aria-label={profile.name}>
               <span className={styles.coverLine}>
                 <span className={styles.nameClip}>
-                  <motion.span
-                    initial={shouldReduceMotion ? false : { opacity: 0, transform: "translateY(105%)", filter: "blur(14px)" }}
-                    animate={isLoading ? undefined : { opacity: 1, transform: "translateY(0%)", filter: "blur(0px)" }}
-                    transition={{ duration: 0.9, delay: 0.18 + contentRevealDelay, ease: revealEase }}
-                  >
-                    Zeeshan
-                  </motion.span>
+                  <span ref={firstNameRef} data-intro-pending>Zeeshan</span>
                 </span>
               </span>
               <span className={`${styles.coverLine} ${styles.coverLineSecond}`}>
                 <span className={styles.nameClip}>
-                  <motion.span
-                    className={styles.accentName}
-                    initial={shouldReduceMotion ? false : { opacity: 0, transform: "translateY(105%)", filter: "blur(14px)" }}
-                    animate={isLoading ? undefined : { opacity: 1, transform: "translateY(0%)", filter: "blur(0px)" }}
-                    transition={{ duration: 0.9, delay: 0.29 + contentRevealDelay, ease: revealEase }}
-                  >
-                    Nawaz.
-                  </motion.span>
+                  <span ref={lastNameRef} data-intro-pending className={styles.accentName}>Nawaz.</span>
                 </span>
               </span>
             </h1>
-            <motion.div className={styles.coverFooter}
-              initial="hidden"
-              animate={isLoading ? "hidden" : "visible"}
-              variants={{
-                hidden: {},
-                visible: { transition: { staggerChildren: 0.12, delayChildren: 0.56 + contentRevealDelay } },
-              }}
-            >
-              <motion.div className={styles.coverRole}
-                variants={{
-                  hidden: shouldReduceMotion ? {} : heroReveal(0, 14).initial,
-                  visible: heroReveal(0, 14).animate,
-                }}
-                transition={{ duration: 0.62, ease: revealEase }}
-              >
+            <div className={styles.coverFooter} ref={coverFooterRef} data-intro-pending>
+              <div className={styles.coverRole}>
                 <span>{profile.role}</span>
                 <strong>I design the interface.<br />I build the product.</strong>
-              </motion.div>
-              <motion.p variants={{ hidden: shouldReduceMotion ? {} : heroReveal(0, 14).initial, visible: heroReveal(0, 14).animate }} transition={{ duration: 0.62, ease: revealEase }}>{profile.summary}</motion.p>
-              <motion.div
-                className={styles.actions}
-                variants={{
-                  hidden: shouldReduceMotion ? {} : heroReveal(0, 12).initial,
-                  visible: heroReveal(0, 12).animate,
-                }}
-                transition={{ duration: 0.58, ease: revealEase }}
-              >
+              </div>
+              <p>{profile.summary}</p>
+              <div className={styles.actions}>
                 <a className={styles.primaryAction} href="#work">
                   Selected work <ArrowDown size={17} aria-hidden="true" />
                 </a>
                 <a className={styles.secondaryAction} href="/resume/Zeeshan-Nawaz-Resume.pdf" download>
                   Résumé <Download size={16} aria-hidden="true" />
                 </a>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
 
-          <motion.a
+          <a
             className={styles.scrollCue}
+            ref={scrollCueRef}
+            data-intro-pending
             href="#work"
             aria-label="Scroll to featured work"
-            initial={shouldReduceMotion ? false : heroReveal(0.78, 8).initial}
-            animate={isLoading ? undefined : heroReveal(0.78, 8).animate}
-            transition={heroReveal(0.78, 8).transition}
           >
             Scroll / explore <ArrowDown size={14} aria-hidden="true" />
-          </motion.a>
+          </a>
         </section>
 
         <ProjectShowcase shouldReduceMotion={Boolean(shouldReduceMotion)} />
         <WhatIBuild shouldReduceMotion={Boolean(shouldReduceMotion)} />
         <SkillsShowcase shouldReduceMotion={Boolean(shouldReduceMotion)} />
         <ContactSection shouldReduceMotion={Boolean(shouldReduceMotion)} />
-      </motion.div>
+      </div>
     </main>
   );
 }
 
-function sectionReveal(shouldReduceMotion: boolean, delay = 0) {
-  return {
-    initial: shouldReduceMotion ? { opacity: 0 } : { opacity: 0, transform: "translateY(32px)", filter: "blur(12px)" },
-    whileInView: { opacity: 1, transform: "translateY(0px)", filter: "blur(0px)" },
-    viewport: { once: true, amount: 0.3 },
-    transition: shouldReduceMotion
-      ? { duration: 0.18, delay }
-      : { duration: 0.72, delay, ease: revealEase },
-  } as const;
+function ScrollSurface({ children, shouldReduceMotion }: { children: ReactNode; shouldReduceMotion: boolean }) {
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  useLenis((lenis) => {
+    const surface = surfaceRef.current;
+    if (!surface || shouldReduceMotion) return;
+    const rect = surface.getBoundingClientRect();
+    const viewport = window.innerHeight;
+    const progress = Math.max(0, Math.min(1, (viewport - rect.top) / (viewport + rect.height)));
+    const centered = 1 - Math.min(1, Math.abs(progress - 0.5) * 2);
+    const y = (0.5 - progress) * 90;
+    const scale = 0.965 + centered * 0.035;
+    const tilt = (0.5 - progress) * 1.4;
+    const velocityBlur = Math.min(3.5, Math.abs(lenis.velocity) * 0.045);
+    surface.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotateX(${tilt.toFixed(2)}deg)`;
+    surface.style.filter = `blur(${velocityBlur.toFixed(2)}px)`;
+    surface.style.setProperty("--surface-progress", progress.toFixed(4));
+  }, [shouldReduceMotion]);
+
+  return (
+    <div ref={surfaceRef} className={styles.rectangleSurface}>
+      <span className={styles.surfaceIndex} aria-hidden="true">ZN</span>
+      {children}
+    </div>
+  );
 }
 
 function WhatIBuild({ shouldReduceMotion }: { shouldReduceMotion: boolean }) {
   return (
     <section className={styles.buildSection} aria-labelledby="build-title">
+      <ScrollSurface shouldReduceMotion={shouldReduceMotion}>
       <div className={styles.sectionTopline}>
         <span>What I build</span>
         <span>Capabilities</span>
       </div>
-      <motion.div className={styles.buildHeading} {...sectionReveal(shouldReduceMotion)}>
+      <div className={styles.buildHeading}>
         <div>
           <p>From idea to interface</p>
           <span>Strategy · Interface · Engineering</span>
         </div>
         <h2 id="build-title">I turn complex ideas into <em>clear digital products.</em></h2>
-      </motion.div>
+      </div>
       <div className={styles.capabilityGrid}>
         {capabilities.map((capability, index) => {
           const Icon = capability.icon;
           return (
-            <motion.article
+            <article
               className={styles.capabilityCard}
               key={capability.title}
-              {...sectionReveal(shouldReduceMotion, index * 0.08)}
+              style={{ "--item-index": index } as CSSProperties}
             >
               <span className={styles.capabilityIcon}><Icon size={25} strokeWidth={1.4} aria-hidden="true" /></span>
               <div>
@@ -265,10 +305,11 @@ function WhatIBuild({ shouldReduceMotion }: { shouldReduceMotion: boolean }) {
               <ul aria-label={`${capability.title} services`}>
                 {capability.tags.map((tag) => <li key={tag}>{tag}</li>)}
               </ul>
-            </motion.article>
+            </article>
           );
         })}
       </div>
+      </ScrollSurface>
     </section>
   );
 }
@@ -276,29 +317,31 @@ function WhatIBuild({ shouldReduceMotion }: { shouldReduceMotion: boolean }) {
 function SkillsShowcase({ shouldReduceMotion }: { shouldReduceMotion: boolean }) {
   return (
     <section className={styles.skillsSection} aria-labelledby="skills-title">
+      <ScrollSurface shouldReduceMotion={shouldReduceMotion}>
       <div className={styles.sectionTopline}>
         <span>Stack &amp; skills</span>
         <span>Tools for the work</span>
       </div>
       <div className={styles.skillsRedesign}>
-        <motion.div className={styles.skillsStatement} {...sectionReveal(shouldReduceMotion)}>
+        <div className={styles.skillsStatement}>
           <span className={styles.skillsSignal}><i /> Product-minded engineering</span>
           <h2 id="skills-title">Tools change.<br /><em>Good systems last.</em></h2>
           <p>I work across the product surface—from interaction and motion to application architecture and data.</p>
-        </motion.div>
+        </div>
         <div className={styles.skillBands}>
           {skillGroups.map((group, index) => (
-            <motion.article
+            <article
               className={styles.skillBand}
               key={group.label}
-              {...sectionReveal(shouldReduceMotion, index * 0.07)}
+              style={{ "--item-index": index } as CSSProperties}
             >
               <header><strong>{group.label}</strong><i /></header>
               <div>{group.skills.map((skill) => <span key={skill}>{skill}</span>)}</div>
-            </motion.article>
+            </article>
           ))}
         </div>
       </div>
+      </ScrollSurface>
     </section>
   );
 }
@@ -306,11 +349,12 @@ function SkillsShowcase({ shouldReduceMotion }: { shouldReduceMotion: boolean })
 function ContactSection({ shouldReduceMotion }: { shouldReduceMotion: boolean }) {
   return (
     <section className={styles.contactSection} id="contact" aria-labelledby="contact-title">
+      <ScrollSurface shouldReduceMotion={shouldReduceMotion}>
       <div className={styles.sectionTopline}>
         <span>Contact</span>
         <span>Available for selected work</span>
       </div>
-      <motion.div className={styles.contactContent} {...sectionReveal(shouldReduceMotion)}>
+      <div className={styles.contactContent}>
         <div className={styles.contactStatus}><i /><span>Open to thoughtful collaborations</span></div>
         <div className={styles.contactMessage}>
           <p>Have a product in mind?</p>
@@ -320,7 +364,7 @@ function ContactSection({ shouldReduceMotion }: { shouldReduceMotion: boolean })
           <span><small>Start a project</small>{profile.email}</span>
           <span className={styles.contactArrow}><ArrowRight size={25} aria-hidden="true" /></span>
         </a>
-      </motion.div>
+      </div>
       <footer className={styles.footer}>
         <LogoMark title="Zeeshan Nawaz" />
         <span>Gujranwala, Pakistan</span>
@@ -329,6 +373,7 @@ function ContactSection({ shouldReduceMotion }: { shouldReduceMotion: boolean })
           <a href={`mailto:${profile.email}`}>Email <ArrowUpRight size={13} /></a>
         </div>
       </footer>
+      </ScrollSurface>
     </section>
   );
 }
@@ -344,29 +389,43 @@ function loaderLine(delay: number) {
 function ProjectShowcase({ shouldReduceMotion }: { shouldReduceMotion: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [scrollDirection, setScrollDirection] = useState(1);
   const projects = featuredProjects;
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-  const smoothScrollProgress = useSpring(scrollYProgress, {
-    stiffness: 180,
-    damping: 30,
-    mass: 0.45,
-  });
-  const progressScale = useTransform(smoothScrollProgress, [0, 1], [0, 1]);
+  const updateProjects = useCallback((velocity = 0) => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const rect = section.getBoundingClientRect();
+    const distance = Math.max(1, rect.height - window.innerHeight);
+    const progress = Math.max(0, Math.min(1, -rect.top / distance));
+    const position = progress * (projects.length - 1);
+    const nextIndex = Math.min(projects.length - 1, Math.round(position));
+    setActiveIndex((current) => current === nextIndex ? current : nextIndex);
+    section.style.setProperty("--project-progress", progress.toFixed(4));
 
-  useMotionValueEvent(scrollYProgress, "change", (progress) => {
-    const nextIndex = Math.min(projects.length - 1, Math.floor(progress * projects.length));
-    setActiveIndex((currentIndex) => {
-      if (currentIndex === nextIndex) return currentIndex;
-      setScrollDirection(nextIndex > currentIndex ? 1 : -1);
-      return nextIndex;
+    section.querySelectorAll<HTMLElement>("[data-project-card]").forEach((card, index) => {
+      const delta = index - position;
+      const absoluteDelta = Math.abs(delta);
+      const x = delta * Math.min(window.innerWidth * 0.94, 1340);
+      const scale = Math.max(0.84, 1 - absoluteDelta * 0.08);
+      const opacity = Math.max(0.12, 1 - absoluteDelta * 0.62);
+      const rotate = delta * -2.2;
+      const blur = shouldReduceMotion ? 0 : Math.min(9, absoluteDelta * 5 + Math.abs(velocity) * 0.02);
+      card.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0) scale(${scale.toFixed(4)}) rotateY(${rotate.toFixed(2)}deg)`;
+      card.style.opacity = opacity.toFixed(3);
+      card.style.filter = `blur(${blur.toFixed(2)}px)`;
+      card.style.zIndex = String(projects.length - Math.round(absoluteDelta));
+      card.style.pointerEvents = absoluteDelta < 0.48 ? "auto" : "none";
     });
-  });
+  }, [projects.length, shouldReduceMotion]);
 
-  const project = projects[activeIndex];
+  useLenis((lenis) => updateProjects(lenis.velocity), [updateProjects]);
+
+  useEffect(() => {
+    if (!shouldReduceMotion) return;
+    const update = () => updateProjects();
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [shouldReduceMotion, updateProjects]);
 
   return (
     <section
@@ -379,36 +438,32 @@ function ProjectShowcase({ shouldReduceMotion }: { shouldReduceMotion: boolean }
       <div className={styles.projectsSticky}>
         <div className={styles.projectsTopline}>
           <span>Selected work</span>
+          <span id="projects-title">Live products</span>
         </div>
 
         <div className={styles.projectsLayout}>
-          <div className={styles.projectsIntro}>
-            <p>Scroll to explore</p>
-            <h2 id="projects-title">Projects built across web and mobile.</h2>
-          </div>
-
           <div className={styles.projectStage} aria-live="polite">
-            <AnimatePresence mode="popLayout" initial={false} custom={scrollDirection}>
-              <motion.article
+            {projects.map((project, index) => (
+              <article
                 className={styles.projectPanel}
                 key={project.id}
-                custom={scrollDirection}
-                variants={{
-                  enter: (direction: number) => shouldReduceMotion
-                    ? { opacity: 0 }
-                    : { opacity: 0, y: direction * 110, scale: 0.975, filter: "blur(10px)" },
-                  center: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
-                  exit: (direction: number) => shouldReduceMotion
-                    ? { opacity: 0 }
-                    : { opacity: 0, y: direction * -70, scale: 0.985, filter: "blur(7px)" },
-                }}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={shouldReduceMotion ? { duration: 0.16 } : { type: "spring", bounce: 0, duration: 0.56 }}
+                data-project-card
+                aria-hidden={activeIndex !== index}
+                style={shouldReduceMotion ? { opacity: activeIndex === index ? 1 : 0 } : undefined}
               >
+                <div className={styles.projectChrome} aria-hidden="true">
+                  <span>ZN</span>
+                  <span>{project.name.toUpperCase()}</span>
+                  <span>SCROLL ↓</span>
+                </div>
                 <a className={styles.projectVisual} href={project.liveUrl} target="_blank" rel="noreferrer" aria-label={`Open ${project.name} live site`}>
-                  <Image src={project.image} alt={project.imageAlt} fill sizes="(max-width: 900px) 100vw, 60vw" priority={activeIndex === 0} />
+                  <Image src={project.image} alt={project.imageAlt} fill sizes="(max-width: 900px) 100vw, 60vw" priority={index === 0} />
+                  {project.mobileImage && (
+                    <span className={styles.mobileEmulator} aria-label="Dex Remit mobile application preview">
+                      <span className={styles.emulatorSpeaker} />
+                      <Image src={project.mobileImage} alt="Dex Remit mobile login and signup application" fill sizes="260px" />
+                    </span>
+                  )}
                   <span>View live project <ArrowUpRight size={16} aria-hidden="true" /></span>
                 </a>
                 <div className={styles.projectContent}>
@@ -431,18 +486,16 @@ function ProjectShowcase({ shouldReduceMotion }: { shouldReduceMotion: boolean }
                     <a href={project.liveUrl} target="_blank" rel="noreferrer">
                       Live site <ArrowUpRight size={17} aria-hidden="true" />
                     </a>
-                    <a href={project.githubUrl} target="_blank" rel="noreferrer">
-                      GitHub <ArrowUpRight size={17} aria-hidden="true" />
-                    </a>
+                    {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={17} aria-hidden="true" /></a>}
                   </div>
                 </div>
-              </motion.article>
-            </AnimatePresence>
+              </article>
+            ))}
           </div>
         </div>
 
         <div className={styles.scrollProgress} aria-hidden="true">
-          <motion.span style={{ scaleX: progressScale }} />
+          <span />
         </div>
       </div>
     </section>
