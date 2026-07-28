@@ -1,0 +1,16 @@
+/** Open scroll surface — no frame, mark, or inset panel. */
+.surface {
+  --surface-progress: 0;
+  position: relative;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform-origin: center top;
+  will-change: transform;
+}
+
+.surface[data-surface-effect="contact"] {
+  color: var(--foreground);
+}

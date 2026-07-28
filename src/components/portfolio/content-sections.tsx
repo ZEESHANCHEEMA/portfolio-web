@@ -1,7 +1,19 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { ArrowRight, ArrowUpRight, Code2, Download, Layers3, Smartphone } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Code2,
+  Compass,
+  Download,
+  Layers3,
+  MapPin,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 import { LogoMark } from "@/components/logo-mark";
 import { profile } from "@/content/profile";
 import { ScrollSurface } from "./scroll-surface";
@@ -22,17 +34,16 @@ const skillGroups = [
   { label: "Data & tools", skills: ["REST APIs", "Redux Toolkit", "Zustand", "Firebase", "Git"] },
 ] as const;
 
-const workingPrinciples = [
-  ["01", "Product thinking", "I begin with the user journey and business goal—not the component list."],
-  ["02", "Interface craft", "Clear hierarchy, responsive behavior, and purposeful motion shape every screen."],
-  ["03", "Reliable delivery", "Typed systems and maintainable architecture keep the product ready to grow."],
-] as const;
+const workingPrinciples: ReadonlyArray<{ icon: LucideIcon; title: string; description: string }> = [
+  { icon: Compass, title: "Product thinking", description: "I begin with the user journey and business goal—not the component list." },
+  { icon: Sparkles, title: "Interface craft", description: "Clear hierarchy, responsive behavior, and purposeful motion shape every screen." },
+  { icon: ShieldCheck, title: "Reliable delivery", description: "Typed systems and maintainable architecture keep the product ready to grow." },
+];
 
 export function WhatIBuild({ shouldReduceMotion }: SectionProps) {
   return (
     <section className={styles.buildSection} aria-labelledby="build-title">
       <ScrollSurface effect="build" shouldReduceMotion={shouldReduceMotion}>
-        <div className={styles.sectionTopline}><span>What I build</span><span>Capabilities</span></div>
         <div className={styles.buildHeading}>
           <div><p>From idea to interface</p><span>Strategy · Interface · Engineering</span></div>
           <h2 id="build-title">I turn complex ideas into <em>clear digital products.</em></h2>
@@ -58,7 +69,6 @@ export function SkillsShowcase({ shouldReduceMotion }: SectionProps) {
   return (
     <section className={styles.skillsSection} aria-labelledby="skills-title">
       <ScrollSurface effect="skills" shouldReduceMotion={shouldReduceMotion}>
-        <div className={styles.sectionTopline}><span>Stack &amp; skills</span><span>Tools for the work</span></div>
         <div className={styles.skillsRedesign}>
           <div className={styles.skillsStatement}>
             <span className={styles.skillsSignal}><i /> Product-minded engineering</span>
@@ -83,15 +93,23 @@ export function AboutSection({ shouldReduceMotion }: SectionProps) {
   return (
     <section className={styles.aboutSection} id="about" aria-labelledby="about-title">
       <ScrollSurface effect="about" shouldReduceMotion={shouldReduceMotion}>
-        <div className={styles.sectionTopline}><span>About &amp; experience</span><span>Design × engineering</span></div>
         <div className={styles.aboutLead}>
-          <span data-about-label>Based in {profile.location}</span>
+          <span data-about-label>
+            <MapPin size={13} strokeWidth={1.6} aria-hidden="true" />
+            {profile.location}
+          </span>
           <h2 id="about-title"><span data-about-line="first">I work where thoughtful</span><span data-about-line="second">design meets <em>production code.</em></span></h2>
           <p data-about-copy>I build web and mobile products from the first interface decision through implementation—connecting interaction, frontend architecture, APIs, and the details that make software feel considered.</p>
         </div>
         <div className={styles.aboutPrinciples}>
-          {workingPrinciples.map(([number, title, description]) => (
-            <article key={number} data-about-item><span>{number}</span><h3>{title}</h3><p>{description}</p></article>
+          {workingPrinciples.map(({ icon: Icon, title, description }) => (
+            <article key={title} data-about-item>
+              <span className={styles.principleIcon} aria-hidden="true">
+                <Icon size={22} strokeWidth={1.5} />
+              </span>
+              <h3>{title}</h3>
+              <p>{description}</p>
+            </article>
           ))}
         </div>
         <div className={styles.aboutFooter} data-about-footer>
@@ -107,9 +125,11 @@ export function ContactSection({ shouldReduceMotion }: SectionProps) {
   return (
     <section className={styles.contactSection} id="contact" aria-labelledby="contact-title">
       <ScrollSurface effect="contact" shouldReduceMotion={shouldReduceMotion}>
-        <div className={styles.sectionTopline}><span>Contact</span><span>Available for selected work</span></div>
         <div className={styles.contactContent}>
-          <div className={styles.contactStatus}><i /><span>Open for selected collaborations</span><strong>Gujranwala / PK</strong></div>
+          <p className={styles.locationOnly}>
+            <MapPin size={14} strokeWidth={1.6} aria-hidden="true" />
+            <span>{profile.location}</span>
+          </p>
           <div className={styles.contactMessage}>
             <h2 id="contact-title"><span data-contact-line="first">Have an idea?</span><span data-contact-line="second" className={styles.contactAccent}>Let&apos;s move it.</span></h2>
             <a className={styles.contactAction} data-contact-action href={`mailto:${profile.email}`}><span>Start<br />a project</span><ArrowUpRight size={34} aria-hidden="true" /></a>

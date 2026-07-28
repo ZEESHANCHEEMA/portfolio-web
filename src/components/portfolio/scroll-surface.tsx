@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from "react";
 import { useLenis } from "lenis/react";
-import styles from "../hero.module.css";
+import styles from "./scroll-surface.module.css";
 
 export type SurfaceEffect = "build" | "skills" | "about" | "contact";
 
@@ -43,8 +43,7 @@ export function ScrollSurface({ children, effect, shouldReduceMotion }: ScrollSu
   }, [effect, shouldReduceMotion]);
 
   return (
-    <div ref={surfaceRef} className={styles.rectangleSurface} data-surface-effect={effect}>
-      <span className={styles.surfaceIndex} aria-hidden="true">ZN</span>
+    <div ref={surfaceRef} className={styles.surface} data-surface-effect={effect}>
       {children}
     </div>
   );
