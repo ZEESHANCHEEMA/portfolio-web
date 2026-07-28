@@ -65,14 +65,6 @@ export function ProjectShowcase({ shouldReduceMotion }: ProjectShowcaseProps) {
       <div className={styles.projectsSticky}>
         <header className={styles.projectsHeader}>
           <h2 id="projects-title">Selected work</h2>
-          <p aria-live="polite">
-            <span className={styles.projectCounter}>
-              {String(activeIndex + 1).padStart(2, "0")}
-              <i>/</i>
-              {String(projects.length).padStart(2, "0")}
-            </span>
-            <span className={styles.projectActiveName}>{projects[activeIndex]?.name}</span>
-          </p>
         </header>
 
         <div className={styles.projectsLayout}>

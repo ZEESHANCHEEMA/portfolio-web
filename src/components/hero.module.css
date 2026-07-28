@@ -1105,8 +1105,18 @@
 .availability {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 9px;
   justify-self: end;
+}
+
+.availability .navLinkedInIcon {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .hero {
@@ -1965,7 +1975,7 @@
     margin-left: 22px;
   }
 
-  .footer {
+.footer {
     grid-template-columns: 1fr auto;
     gap: 28px;
   }
@@ -2042,7 +2052,7 @@
   .aboutPrinciples article + article {
     border-top: 0;
     border-left: 0;
-    padding-top: 28px;
+  padding: 28px 0 clamp(44px, 6vw, 80px);
   }
 
   .aboutPrinciples h3 {

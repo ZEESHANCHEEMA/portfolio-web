@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, IBM_Plex_Mono, Inter } from "next/font/google";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { profile } from "@/content/profile";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-sans",
+const bodyFont = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const displayFont = Fraunces({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
+const monoFont = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://zeeshannawaz.dev";
@@ -80,16 +86,30 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       addressLocality: "Gujranwala",
       addressCountry: "PK",
     },
-    sameAs: [profile.linkedIn],
+    sameAs: [profile.linkedIn, "https://github.com/ZEESHANCHEEMA"],
     knowsAbout: ["React", "Next.js", "React Native", "TypeScript", "Frontend engineering"],
+  };
+
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: `${profile.name} — Web & Mobile Development`,
+    areaServed: "Worldwide",
+    provider: { "@type": "Person", name: profile.name },
+    address: { "@type": "PostalAddress", addressLocality: "Gujranwala", addressCountry: "PK" },
+    serviceType: ["Web Application Development", "Mobile Application Development", "Frontend Architecture Consulting"],
   };
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable}`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
         />
         <SmoothScroll />
         {children}

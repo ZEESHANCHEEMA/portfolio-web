@@ -1,13 +1,15 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
 import {
-  ArrowRight,
   ArrowUpRight,
+  Check,
+  ChevronDown,
   Code2,
   Compass,
   Download,
   Layers3,
+  Mail,
   MapPin,
   ShieldCheck,
   Smartphone,
@@ -18,6 +20,7 @@ import { LogoMark } from "@/components/logo-mark";
 import { profile } from "@/content/profile";
 import { ScrollSurface } from "./scroll-surface";
 import styles from "../hero.module.css";
+import setupStyles from "./portfolio-setup.module.css";
 
 type SectionProps = { shouldReduceMotion: boolean };
 
@@ -28,10 +31,10 @@ const capabilities = [
 ] as const;
 
 const skillGroups = [
-  { label: "Core", skills: ["TypeScript", "JavaScript", "React", "Next.js"] },
-  { label: "Mobile", skills: ["React Native", "Expo", "Responsive UI"] },
-  { label: "Interface", skills: ["CSS", "Tailwind CSS", "Motion", "Material UI"] },
-  { label: "Data & tools", skills: ["REST APIs", "Redux Toolkit", "Zustand", "Firebase", "Git"] },
+  { id: "frontend", label: "Frontend", skills: ["React", "Next.js", "TypeScript", "Tailwind CSS"] },
+  { id: "mobile", label: "Mobile", skills: ["React Native", "Expo", "Responsive UI"] },
+  { id: "backend", label: "Backend / APIs", skills: ["REST APIs", "Firebase", "Stripe", "Hono RPC"] },
+  { id: "workflow", label: "Tools & Workflow", skills: ["Git", "Redux Toolkit", "Zustand", "Zod"] },
 ] as const;
 
 const workingPrinciples: ReadonlyArray<{ icon: LucideIcon; title: string; description: string }> = [
@@ -66,23 +69,28 @@ export function WhatIBuild({ shouldReduceMotion }: SectionProps) {
 }
 
 export function SkillsShowcase({ shouldReduceMotion }: SectionProps) {
+  const [active, setActive] = useState<(typeof skillGroups)[number]["id"]>(skillGroups[0].id);
+  const current = skillGroups.find((group) => group.id === active) ?? skillGroups[0];
+
   return (
-    <section className={styles.skillsSection} aria-labelledby="skills-title">
+    <section className={`${styles.skillsSection} ${setupStyles.skills}`} id="skills" aria-labelledby="skills-title">
       <ScrollSurface effect="skills" shouldReduceMotion={shouldReduceMotion}>
-        <div className={styles.skillsRedesign}>
-          <div className={styles.skillsStatement}>
-            <span className={styles.skillsSignal}><i /> Product-minded engineering</span>
-            <h2 id="skills-title">Tools change.<br /><em>Good systems last.</em></h2>
-            <p>I work across the product surface—from interaction and motion to application architecture and data.</p>
-          </div>
-          <div className={styles.skillBands}>
-            {skillGroups.map((group, index) => (
-              <article className={styles.skillBand} key={group.label} data-skill-band style={{ "--item-index": index } as CSSProperties}>
-                <header><strong>{group.label}</strong><i /></header>
-                <div>{group.skills.map((skill) => <span key={skill}>{skill}</span>)}</div>
-              </article>
+        <p className={setupStyles.eyebrow}>{"// stack manifest"}</p>
+        <h2 className={setupStyles.sectionTitle} id="skills-title">What I build with.</h2>
+        <div className={setupStyles.skillTabs} role="group" aria-label="Skill categories">
+          {skillGroups.map((group) => (
+            <button key={group.id} type="button" aria-pressed={active === group.id} onClick={() => setActive(group.id)}>{group.label}</button>
+          ))}
+        </div>
+        <div className={setupStyles.manifest} data-skill-band>
+          <span>{"{"}</span>
+          <ul>
+            {current.skills.map((skill, index) => (
+              <li key={skill}><code>&quot;{skill.toLowerCase().replaceAll(" ", "-")}&quot;</code><span>:</span><strong>&quot;proficiency — verify&quot;</strong>{index < current.skills.length - 1 ? "," : ""}</li>
             ))}
-          </div>
+          </ul>
+          <span>{"}"}</span>
+          <p>Experience levels awaiting Zeeshan&apos;s confirmation.</p>
         </div>
       </ScrollSurface>
     </section>
@@ -122,29 +130,174 @@ export function AboutSection({ shouldReduceMotion }: SectionProps) {
 }
 
 export function ContactSection({ shouldReduceMotion }: SectionProps) {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error" | "unconfigured">("idle");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formId = process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID;
+    if (!formId) {
+      setStatus("unconfigured");
+      return;
+    }
+
+    setStatus("sending");
+    try {
+      const response = await fetch(`https://formspree.io/f/${formId}`, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: new FormData(event.currentTarget),
+      });
+      if (!response.ok) throw new Error("Contact request failed");
+      event.currentTarget.reset();
+      setStatus("sent");
+    } catch {
+      setStatus("error");
+    }
+  }
+
   return (
-    <section className={styles.contactSection} id="contact" aria-labelledby="contact-title">
+    <section className={`${styles.contactSection} ${setupStyles.contact}`} id="contact" aria-labelledby="contact-title">
       <ScrollSurface effect="contact" shouldReduceMotion={shouldReduceMotion}>
-        <div className={styles.contactContent}>
-          <p className={styles.locationOnly}>
-            <MapPin size={14} strokeWidth={1.6} aria-hidden="true" />
-            <span>{profile.location}</span>
-          </p>
-          <div className={styles.contactMessage}>
-            <h2 id="contact-title"><span data-contact-line="first">Have an idea?</span><span data-contact-line="second" className={styles.contactAccent}>Let&apos;s move it.</span></h2>
-            <a className={styles.contactAction} data-contact-action href={`mailto:${profile.email}`}><span>Start<br />a project</span><ArrowUpRight size={34} aria-hidden="true" /></a>
+        <div className={setupStyles.contactGrid}>
+          <div className={setupStyles.contactIntro}>
+            <p className={setupStyles.eyebrow}>Start a project</p>
+            <h2 className={setupStyles.sectionTitle} id="contact-title">Have an idea? Let&apos;s move it.</h2>
+            <p>Tell me what you&apos;re building. If it&apos;s a fit, I&apos;ll follow up with questions and a rough plan—no sales pitch.</p>
+            <dl><div><dt>response-time</dt><dd>&lt; 24 hours</dd></div><div><dt>based-in</dt><dd>Gujranwala, PK</dd></div></dl>
+            <a href={`mailto:${profile.email}`}>{profile.email}</a>
+            <a href={profile.linkedIn} target="_blank" rel="noreferrer">LinkedIn <ArrowUpRight size={14} /></a>
           </div>
-          <a className={styles.contactEmail} href={`mailto:${profile.email}`}>{profile.email}<ArrowRight size={20} /></a>
+          <form className={setupStyles.contactForm} onSubmit={handleSubmit}>
+            <label>Name<input name="name" autoComplete="name" required placeholder="Your name" /></label>
+            <label>Email<input name="email" type="email" autoComplete="email" required placeholder="you@company.com" /></label>
+            <div className={setupStyles.formRow}>
+              <CustomSelect label="Project type" name="projectType" defaultValue="Web app" options={["Web app", "Mobile app", "Both", "Not sure yet"]} />
+              <CustomSelect label="Budget range" name="budget" defaultValue="Not sure yet" options={["Not sure yet", "Under $1,000", "$1,000 – $5,000", "$5,000+"]} />
+            </div>
+            <label>Project details<textarea name="message" rows={5} required placeholder="What are you building, and what would make it a success?" /></label>
+            <button type="submit" disabled={status === "sending"}>{status === "sending" ? "Sending…" : "Send message"}</button>
+            <div className={setupStyles.formStatus} role="status" aria-live="polite">
+              {status === "sent" && <p>Message sent. I&apos;ll reply within 24 hours.</p>}
+              {(status === "error" || status === "unconfigured") && <p>Form unavailable for now. Email me at <a href={`mailto:${profile.email}`}>{profile.email}</a>.</p>}
+            </div>
+          </form>
         </div>
         <footer className={styles.footer}>
           <LogoMark title="Zeeshan Nawaz" />
           <span>Gujranwala, Pakistan</span>
-          <div>
-            <a href={profile.linkedIn} target="_blank" rel="noreferrer">LinkedIn <ArrowUpRight size={13} /></a>
-            <a href={`mailto:${profile.email}`}>Email <ArrowUpRight size={13} /></a>
-          </div>
+          <nav className={setupStyles.footerSocials} aria-label="Social links">
+            <span className={setupStyles.socialTile}>
+              <span className={setupStyles.socialTooltip} role="tooltip">LinkedIn</span>
+              <a href={profile.linkedIn} target="_blank" rel="noreferrer" aria-label="Zeeshan Nawaz on LinkedIn">
+                <LinkedInMark /><i aria-hidden="true" />
+              </a>
+            </span>
+            <span className={setupStyles.socialTile}>
+              <span className={setupStyles.socialTooltip} role="tooltip">GitHub</span>
+              <a href="https://github.com/ZEESHANCHEEMA" target="_blank" rel="noreferrer" aria-label="Zeeshan Nawaz on GitHub">
+                <GitHubMark /><i aria-hidden="true" />
+              </a>
+            </span>
+            <span className={setupStyles.socialTile}>
+              <span className={setupStyles.socialTooltip} role="tooltip">Email</span>
+              <a href={`mailto:${profile.email}`} aria-label={`Email ${profile.name}`}>
+                <Mail aria-hidden="true" /><i aria-hidden="true" />
+              </a>
+            </span>
+          </nav>
         </footer>
       </ScrollSurface>
     </section>
   );
+}
+
+type CustomSelectProps = {
+  label: string;
+  name: string;
+  defaultValue: string;
+  options: readonly string[];
+};
+
+function CustomSelect({ label, name, defaultValue, options }: CustomSelectProps) {
+  const [value, setValue] = useState(defaultValue);
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(() => Math.max(0, options.indexOf(defaultValue)));
+  const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const listId = useId();
+
+  useEffect(() => {
+    function closeOnOutsidePointer(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, []);
+
+  function selectOption(option: string) {
+    setValue(option);
+    setActiveIndex(options.indexOf(option));
+    setOpen(false);
+    requestAnimationFrame(() => buttonRef.current?.focus());
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      setOpen(true);
+      setActiveIndex((index) => (index + direction + options.length) % options.length);
+    } else if ((event.key === "Enter" || event.key === " ") && open) {
+      event.preventDefault();
+      selectOption(options[activeIndex]);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+    }
+  }
+
+  return (
+    <div className={setupStyles.selectField} ref={rootRef}>
+      <span className={setupStyles.selectLabel} id={`${listId}-label`}>{label}</span>
+      <input type="hidden" name={name} value={value} />
+      <button
+        ref={buttonRef}
+        className={setupStyles.selectTrigger}
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-labelledby={`${listId}-label ${listId}-value`}
+        aria-controls={listId}
+        onClick={() => setOpen((current) => !current)}
+        onKeyDown={handleKeyDown}
+      >
+        <span id={`${listId}-value`}>{value}</span>
+        <ChevronDown aria-hidden="true" />
+      </button>
+      {open && (
+        <ul className={setupStyles.selectMenu} id={listId} role="listbox" aria-labelledby={`${listId}-label`}>
+          {options.map((option, index) => (
+            <li
+              key={option}
+              role="option"
+              aria-selected={value === option}
+              data-active={activeIndex === index}
+              onPointerMove={() => setActiveIndex(index)}
+              onClick={() => selectOption(option)}
+            >
+              <span>{option}</span>{value === option && <Check aria-hidden="true" />}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function LinkedInMark() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6ZM2 9h4v12H2zM4 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z" /></svg>;
+}
+
+function GitHubMark() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7.4A5.8 5.8 0 0 0 19.3 3 5.4 5.4 0 0 0 19.1 0S17.9-.4 15 1.6a13.4 13.4 0 0 0-7 0C5.1-.4 3.9 0 3.9 0a5.4 5.4 0 0 0-.2 3A5.8 5.8 0 0 0 2.2 7c0 5.8 3.5 7 6.8 7.4A4.8 4.8 0 0 0 8 18v4m0-3c-3 .9-3-1.5-4.2-2" /></svg>;
 }
